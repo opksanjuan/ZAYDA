@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><title>Zayda · Administración</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@400;500;600&family=Sacramento&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAF4EF;--card:#FFFDFB;--ink:#3B2A2A;--mute:#8a7773;--rose:#A9636A;--rose2:#F3E2E0;--sage:#A3A58C;--sage2:#ECEDE3;--line:#EADFD8;--bad:#b4474f;--ok:#6b7a52;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#241b1b;--card:#2f2424;--ink:#f3e8e4;--mute:#b3a09b;--rose:#d08a91;--rose2:#46302f;--sage:#a3a58c;--sage2:#363629;--line:#433333;--bad:#e07880;--ok:#b5c48f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#241b1b;--card:#2f2424;--ink:#f3e8e4;--mute:#b3a09b;--rose:#d08a91;--rose2:#46302f;--sage:#a3a58c;--sage2:#363629;--line:#433333;--bad:#e07880;--ok:#b5c48f;color-scheme:dark}
+*{box-sizing:border-box}html,body{margin:0;max-width:100%}
+body{background:var(--bg);color:var(--ink);font-family:'Jost',system-ui,sans-serif;font-size:15px;line-height:1.45}
+h1,h2,h3{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;margin:0;color:var(--rose)}
+header{text-align:center;padding:22px 12px 8px}
+.logo{font-family:'Cormorant Garamond',Georgia,serif;font-size:46px;letter-spacing:4px;color:var(--rose);line-height:1}
+.sub{letter-spacing:5px;font-size:12px;font-weight:500;margin-top:4px}
+.script{font-family:'Sacramento',cursive,serif;font-size:30px;color:var(--sage);line-height:1;margin-top:-2px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:6px;overflow-x:auto;padding:10px 12px;border-bottom:1px solid var(--line)}
+nav button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;border-radius:999px;font:500 14px 'Jost',sans-serif;cursor:pointer}
+nav button.on{background:var(--rose);color:#fff;border-color:var(--rose)}
+main{max-width:1000px;margin:0 auto;padding:16px 12px 80px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}.bar h2{font-size:30px;margin-right:auto}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit}
+.bar input{width:200px}
+.btn{border:0;background:var(--rose);color:#fff;padding:10px 16px;border-radius:10px;font:500 14px 'Jost',sans-serif;cursor:pointer}
+.btn.alt{background:var(--sage2);color:var(--ink);border:1px solid var(--line)}.btn.sm{padding:6px 10px;font-size:13px}.btn.bad{background:transparent;color:var(--bad);border:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+.stat b{display:block;font:600 28px 'Cormorant Garamond',serif;color:var(--rose)}.stat span{color:var(--mute);font-size:13px;letter-spacing:.5px}
+.prod img,.ph{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;background:var(--rose2);display:flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:8px}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;background:var(--sage2);color:var(--ink)}.tag.low{background:var(--rose2);color:var(--bad)}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}.row:last-child{border:0}
+.mute{color:var(--mute);font-size:13px}.in{color:var(--ok);font-weight:600}.out{color:var(--bad);font-weight:600}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+#modal{position:fixed;inset:0;background:rgba(40,25,25,.5);display:none;align-items:flex-start;justify-content:center;overflow:auto;z-index:20;padding:20px 12px}
+#modal .box{background:var(--bg);border-radius:18px;padding:20px;width:100%;max-width:480px;margin:auto}
+label{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px;letter-spacing:.4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ln{display:grid;grid-template-columns:1fr 80px 34px;gap:6px;margin-bottom:6px}
+.note{background:var(--rose2);border-radius:14px;padding:14px;white-space:pre-wrap}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;display:none;z-index:30}
+.foot{text-align:center;color:var(--mute);font-size:12px;letter-spacing:2px;margin-top:30px}
+</style></head><body>
+<header><div class="logo">ZAYDA</div><div class="sub">ALMOHADILLAS</div><div class="script">terapéuticas</div></header>
+<nav id="nav"></nav><main id="main"></main><div id="modal"><div class="box" id="box"></div></div><div id="toast"></div>
+<script>
+const K='zayda_v1';let S={products:[],clients:[],orders:[],cash:[],notes:[]},tab='inicio',q='',IMG='';
+try{const r=localStorage.getItem(K);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+const $=id=>document.getElementById(id),uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money=n=>'$'+Number(n||0).toLocaleString('es-AR',{maximumFractionDigits:2});
+const today=()=>new Date().toISOString().slice(0,10);
+const find=(a,id)=>S[a].find(x=>x.id===id);
+function save(){try{localStorage.setItem(K,JSON.stringify(S))}catch(e){toast('No se pudo guardar: espacio lleno (usá imágenes más chicas)')}}
+function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',2600)}
+const TABS=[['inicio','🌿 Inicio'],['productos','Productos'],['pedidos','Pedidos'],['caja','Caja'],['clientes','Clientes'],['notas','Notas']];
+const STATES=['Pendiente','En preparación','Entregado','Cancelado'];
+function go(t){tab=t;q='';render()}
+function render(){$('nav').innerHTML=TABS.map(([k,l])=>`<button class="${k===tab?'on':''}" onclick="go('${k}')">${l}</button>`).join('');
+$('main').innerHTML=({inicio,productos,pedidos,caja,clientes,notas})[tab]()+`<div class="foot">BIENESTAR QUE SE SIENTE · <a href="#" onclick="backup();return false" style="color:inherit">copia de seguridad</a></div>`;
+const s=$('q');if(s){s.oninput=e=>{q=e.target.value;const p=e.target.selectionStart;render();const n=$('q');n.focus();n.setSelectionRange(p,p)};}}
+const match=o=>!q||JSON.stringify(Object.values(o)).toLowerCase().includes(q.toLowerCase());
+const search=()=>`<input id="q" placeholder="Buscar…" value="${esc(q)}">`;
+function monthKey(){return today().slice(0,7)}
+function inicio(){const m=monthKey(),c=S.cash.filter(x=>x.date.startsWith(m)),inc=c.filter(x=>x.type==='in').reduce((a,x)=>a+x.amount,0),out=c.filter(x=>x.type==='out').reduce((a,x)=>a+x.amount,0);
+const pend=S.orders.filter(o=>o.status==='Pendiente'||o.status==='En preparación'),low=S.products.filter(p=>p.stock<=(p.min??3));
+return `<div class="bar"><h2>Resumen del mes</h2></div><div class="grid">
+<div class="card stat"><b>${money(inc)}</b><span>INGRESOS</span></div><div class="card stat"><b>${money(out)}</b><span>EGRESOS</span></div>
+<div class="card stat"><b>${money(inc-out)}</b><span>BALANCE</span></div><div class="card stat"><b>${pend.length}</b><span>PEDIDOS ABIERTOS</span></div>
+<div class="card stat"><b>${S.clients.length}</b><span>CLIENTES</span></div><div class="card stat"><b>${S.products.length}</b><span>PRODUCTOS</span></div></div>
+<div class="grid" style="margin-top:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+<div class="card"><h3>Pedidos por entregar</h3>${pend.length?pend.slice(0,6).map(o=>`<div class="row"><span>${esc(cname(o.client))}<br><span class="mute">${o.date}</span></span><span class="tag">${o.status}</span></div>`).join(''):'<p class="mute">Sin pedidos pendientes ✨</p>'}</div>
+<div class="card"><h3>Stock bajo</h3>${low.length?low.map(p=>`<div class="row"><span>${esc(p.name)}</span><span class="tag low">${p.stock} u.</span></div>`).join(''):'<p class="mute">Todo en orden ✨</p>'}</div></div>`}
+const cname=id=>find('clients',id)?.name||'Sin cliente';
+function productos(){const l=S.products.filter(match);return `<div class="bar"><h2>Productos</h2>${search()}<button class="btn" onclick="editProd()">+ Nuevo</button></div>
+<div class="grid">${l.map(p=>`<div class="card prod">${p.img?`<img src="${p.img}" alt="">`:'<div class="ph">🌿</div>'}<h3 style="font-size:22px">${esc(p.name)}</h3><div class="mute">${esc(p.desc||'')}</div>
+<div style="margin:6px 0"><b>${money(p.price)}</b> <span class="mute">costo ${money(p.cost)}</span></div><span class="tag ${p.stock<=(p.min??3)?'low':''}">Stock: ${p.stock}</span>
+<div class="acts" style="margin-top:10px"><button class="btn alt sm" onclick="editProd('${p.id}')">Editar</button><button class="btn bad sm" onclick="del('products','${p.id}')">Borrar</button></div></div>`).join('')||'<p class="mute">Todavía no cargaste productos.</p>'}</div>`}
+function editProd(id){const p=find('products',id)||{};form(id?'Editar producto':'Nuevo producto',[['name','Nombre'],['desc','Descripción'],['price','Precio de venta','number'],['cost','Costo','number'],['stock','Stock','number'],['min','Avisar si queda menos de','number'],['img','Imagen','img']],{min:3,...p},v=>{v.id=p.id||uid();v.img=IMG||p.img||'';upsert('products',v)})}
+function pedidos(){const l=S.orders.filter(o=>match({...o,c:cname(o.client)})).sort((a,b)=>b.date.localeCompare(a.date));
+return `<div class="bar"><h2>Pedidos</h2>${search()}<button class="btn" onclick="editOrder()">+ Nuevo</button></div><div class="card">${l.map(o=>`<div class="row"><div><b>${esc(cname(o.client))}</b> <span class="tag">${o.status}</span> ${o.paid?'<span class="tag" style="background:var(--rose2)">Pagado</span>':''}<br>
+<span class="mute">${o.date} · ${o.items.map(i=>(i.qty+'× '+esc(find('products',i.pid)?.name||'?'))).join(', ')}</span></div><div><b>${money(o.total)}</b></div>
+<div class="acts">${o.paid?'':`<button class="btn sm" onclick="pay('${o.id}')">Cobrar</button>`}<button class="btn alt sm" onclick="editOrder('${o.id}')">Editar</button><button class="btn bad sm" onclick="delOrder('${o.id}')">Borrar</button></div></div>`).join('')||'<p class="mute">Sin pedidos aún.</p>'}</div>`}
+function lineRow(sel,qty){return `<div class="ln"><select>${S.products.map(p=>`<option value="${p.id}" ${p.id===sel?'selected':''}>${esc(p.name)} (${money(p.price)})</option>`).join('')}</select><input type="number" min="1" value="${qty||1}"><button class="btn bad sm" type="button" onclick="this.parentNode.remove()">×</button></div>`}
+function addLine(){$('lines').insertAdjacentHTML('beforeend',lineRow())}
+function editOrder(id){const o=find('orders',id)||{items:[],date:today(),status:'Pendiente'};
+if(!S.products.length)return toast('Primero cargá productos');
+$('box').innerHTML=`<h2>${id?'Editar':'Nuevo'} pedido</h2><label>Cliente</label><select id="f_client"><option value="">— Sin cliente —</option>${S.clients.map(c=>`<option value="${c.id}" ${c.id===o.client?'selected':''}>${esc(c.name)}</option>`).join('')}</select>
+<div class="two"><div><label>Fecha</label><input type="date" id="f_date" value="${o.date}"></div><div><label>Estado</label><select id="f_status">${STATES.map(s=>`<option ${s===o.status?'selected':''}>${s}</option>`).join('')}</select></div></div>
+<label>Productos</label><div id="lines">${(o.items.length?o.items:[{}]).map(i=>lineRow(i.pid,i.qty)).join('')}</div><button class="btn alt sm" type="button" onclick="addLine()">+ producto</button>
+<label>Observaciones</label><textarea id="f_note" rows="2">${esc(o.note||'')}</textarea><div class="acts" style="margin-top:16px"><button class="btn" onclick="saveOrder('${id||''}')">Guardar</button><button class="btn alt" onclick="closeM()">Cancelar</button></div>`;$('modal').style.display='flex'}
+function saveOrder(id){const items=[...document.querySelectorAll('#lines .ln')].map(r=>({pid:r.querySelector('select').value,qty:+r.querySelector('input').value||1}));
+if(!items.length)return toast('Agregá un producto');const old=find('orders',id);if(old)restock(old,1);
+const o={id:id||uid(),client:$('f_client').value,date:$('f_date').value,status:$('f_status').value,note:$('f_note').value,items,paid:old?.paid||false,
+total:items.reduce((a,i)=>a+i.qty*(find('products',i.pid)?.price||0),0)};restock(o,-1);upsert('orders',o)}
+function restock(o,s){o.items.forEach(i=>{const p=find('products',i.pid);if(p)p.stock=(+p.stock||0)+s*i.qty})}
+function pay(id){const o=find('orders',id);o.paid=true;S.cash.push({id:uid(),date:today(),type:'in',concept:'Pedido de '+cname(o.client),amount:o.total,order:id});save();render();toast('Cobro registrado en caja')}
+function delOrder(id){if(!confirm('¿Borrar este pedido?'))return;const o=find('orders',id);if(o.status!=='Cancelado')restock(o,1);S.orders=S.orders.filter(x=>x.id!==id);save();render()}
+function caja(){const l=S.cash.filter(match).sort((a,b)=>b.date.localeCompare(a.date)),inc=S.cash.filter(x=>x.type==='in').reduce((a,x)=>a+x.amount,0),out=S.cash.filter(x=>x.type==='out').reduce((a,x)=>a+x.amount,0);
+return `<div class="bar"><h2>Caja</h2>${search()}<button class="btn" onclick="editCash('in')">+ Ingreso</button><button class="btn alt" onclick="editCash('out')">+ Egreso</button></div>
+<div class="grid" style="margin-bottom:14px"><div class="card stat"><b>${money(inc)}</b><span>INGRESOS</span></div><div class="card stat"><b>${money(out)}</b><span>EGRESOS</span></div><div class="card stat"><b>${money(inc-out)}</b><span>SALDO TOTAL</span></div></div>
+<div class="card">${l.map(x=>`<div class="row"><span>${esc(x.concept)}<br><span class="mute">${x.date}</span></span><span class="${x.type}">${x.type==='in'?'+':'−'}${money(x.amount)}</span><button class="btn bad sm" onclick="del('cash','${x.id}')">Borrar</button></div>`).join('')||'<p class="mute">Sin movimientos.</p>'}</div>
+<div class="acts" style="margin-top:12px"><button class="btn alt sm" onclick="exportCSV('caja')">Exportar CSV</button></div>`}
+function editCash(t){form(t==='in'?'Nuevo ingreso':'Nuevo egreso (insumos, envíos…)',[['concept','Concepto'],['amount','Monto','number'],['date','Fecha','date']],{date:today()},v=>{v.id=uid();v.type=t;v.amount=+v.amount||0;upsert('cash',v)})}
+function clientes(){const l=S.clients.filter(match);return `<div class="bar"><h2>Clientes</h2>${search()}<button class="btn" onclick="editClient()">+ Nuevo</button>
+<button class="btn alt" onclick="$('csv').click()">Importar CSV</button><button class="btn alt" onclick="exportCSV('clientes')">Exportar</button><input type="file" id="csv" accept=".csv,.txt" hidden onchange="importCSV(this)"></div>
+<p class="mute">Base de datos de contactos. CSV con columnas: nombre, teléfono, email, ciudad, notas.</p><div class="card">${l.map(c=>{const ph=(c.phone||'').replace(/\D/g,'');return `<div class="row"><div><b>${esc(c.name)}</b><br><span class="mute">${esc(c.phone||'')} ${esc(c.email||'')} ${esc(c.city||'')}</span><br><span class="mute">${esc(c.notes||'')}</span></div>
+<div class="acts">${ph?`<a class="btn sm" style="text-decoration:none" target="_blank" href="https://wa.me/${ph}">WhatsApp</a>`:''}${c.email?`<a class="btn alt sm" style="text-decoration:none" href="mailto:${esc(c.email)}">Email</a>`:''}<button class="btn alt sm" onclick="editClient('${c.id}')">Editar</button><button class="btn bad sm" onclick="del('clients','${c.id}')">Borrar</button></div></div>`}).join('')||'<p class="mute">Sin clientes aún.</p>'}</div>`}
+function editClient(id){const c=find('clients',id)||{};form(id?'Editar cliente':'Nuevo cliente',[['name','Nombre'],['phone','Teléfono (con código de país)'],['email','Email'],['city','Ciudad / zona'],['notes','Notas (dolencias, preferencias…)','area']],c,v=>{v.id=c.id||uid();upsert('clients',v)})}
+function importCSV(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{let n=0;r.result.split(/\r?\n/).forEach((ln,i)=>{if(!ln.trim())return;const a=ln.split(/[,;]/).map(s=>s.trim().replace(/^"|"$/g,''));if(i===0&&/nombre|name/i.test(a[0]))return;S.clients.push({id:uid(),name:a[0],phone:a[1]||'',email:a[2]||'',city:a[3]||'',notes:a[4]||''});n++});save();render();toast(n+' clientes importados')};r.readAsText(f)}
+function notas(){const l=S.notes.filter(match).sort((a,b)=>b.date.localeCompare(a.date));return `<div class="bar"><h2>Notas</h2>${search()}<button class="btn" onclick="editNote()">+ Nueva</button></div>
+<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">${l.map(n=>`<div class="note"><b>${esc(n.title||'Nota')}</b><div class="mute">${n.date}</div><p>${esc(n.text)}</p><div class="acts"><button class="btn alt sm" onclick="editNote('${n.id}')">Editar</button><button class="btn bad sm" onclick="del('notes','${n.id}')">Borrar</button></div></div>`).join('')||'<p class="mute">Anotá ideas, recordatorios, proveedores…</p>'}</div>`}
+function editNote(id){const n=find('notes',id)||{date:today()};form('Nota',[['title','Título'],['text','Contenido','area']],n,v=>{v.id=n.id||uid();v.date=n.date;upsert('notes',v)})}
+// utilidades
+function form(title,fields,vals,cb){IMG='';$('box').innerHTML=`<h2>${title}</h2>`+fields.map(([k,l,t])=>`<label>${l}</label>`+(t==='area'?`<textarea id="f_${k}" rows="3">${esc(vals[k]||'')}</textarea>`:t==='img'?`<input type="file" accept="image/*" onchange="pickImg(this)">${vals.img?`<img id="prev" src="${vals.img}" style="width:90px;border-radius:10px;margin-top:6px">`:'<img id="prev" style="width:90px;border-radius:10px;margin-top:6px;display:none">'}`:`<input id="f_${k}" type="${t||'text'}" value="${esc(vals[k]??'')}" ${t==='number'?'step="any"':''}>`)).join('')+`<div class="acts" style="margin-top:16px"><button class="btn" id="ok">Guardar</button><button class="btn alt" onclick="closeM()">Cancelar</button></div>`;
+$('ok').onclick=()=>{const v={};fields.forEach(([k,,t])=>{if(t==='img')return;const e=$('f_'+k).value;v[k]=t==='number'?(+e||0):e});if(v.name!==undefined&&!v.name.trim())return toast('Falta el nombre');cb(v)};$('modal').style.display='flex'}
+function pickImg(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,360/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*s;c.height=im.height*s;c.getContext('2d').drawImage(im,0,0,c.width,c.height);IMG=c.toDataURL('image/jpeg',.78);const p=$('prev');p.src=IMG;p.style.display='block'};im.src=r.result};r.readAsDataURL(f)}
+function closeM(){$('modal').style.display='none'}
+function upsert(a,v){const i=S[a].findIndex(x=>x.id===v.id);if(i>=0)S[a][i]={...S[a][i],...v};else S[a].push(v);save();closeM();render();toast('Guardado ✓')}
+function del(a,id){if(!confirm('¿Borrar?'))return;S[a]=S[a].filter(x=>x.id!==id);save();render()}
+async function saveFile(name,data){try{const d=await claude.use('downloads');if(d){await d.save({filename:name,data});return}}catch(e){}
+try{await navigator.clipboard.writeText(data);toast('Copiado al portapapeles (pegalo en un archivo)')}catch(e){toast('No se pudo exportar')}}
+function exportCSV(w){const rows=w==='caja'?[['fecha','tipo','concepto','monto'],...S.cash.map(x=>[x.date,x.type,x.concept,x.amount])]:[['nombre','telefono','email','ciudad','notas'],...S.clients.map(c=>[c.name,c.phone,c.email,c.city,c.notes])];
+saveFile('zayda-'+w+'.csv',rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n'))}
+function backup(){const sin=JSON.parse(JSON.stringify(S));sin.products.forEach(p=>p.img='');
+$('box').innerHTML=`<h2>Copia de seguridad</h2><p class="mute">Los datos se guardan en este navegador. Descargá una copia (sin imágenes) cada tanto, o restaurá una anterior.</p><div class="acts"><button class="btn" onclick="saveFile('zayda-respaldo.json',JSON.stringify(S))">Descargar copia</button><button class="btn alt" onclick="$('rf').click()">Restaurar</button><button class="btn alt" onclick="closeM()">Cerrar</button></div><input type="file" id="rf" accept=".json" hidden onchange="restore(this)">`;$('modal').style.display='flex'}
+function restore(i){const f=i.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{S=Object.assign({products:[],clients:[],orders:[],cash:[],notes:[]},JSON.parse(r.result));save();closeM();render();toast('Copia restaurada')}catch(e){toast('Archivo inválido')}};r.readAsText(f)}
+$('modal').onclick=e=>{if(e.target.id==='modal')closeM()};
+render();
+</script></body></html>
