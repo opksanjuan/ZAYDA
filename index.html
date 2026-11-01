@@ -29,6 +29,8 @@ nav button span{display:block;font-size:24px}nav button.on{color:var(--pr);font-
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}.dn{font-size:13px;color:var(--mu);font-weight:700;padding:4px 0}
 .cd{border:0;background:var(--bg);color:var(--tx);font:inherit;font-size:17px;border-radius:10px;aspect-ratio:1;cursor:pointer;padding:0}.cd.fe{background:var(--pr);color:var(--prt);font-weight:700}.cd.hoy{outline:3px solid var(--sg)}
 .mh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.mh b{font:700 24px "Cormorant Garamond",Georgia,serif;color:var(--pr)}
+input[type=checkbox]{width:26px;height:26px;flex:none;accent-color:var(--pr)}.ck{display:flex;align-items:center;gap:12px;font-weight:400;padding:9px 0;margin:0;border-bottom:1px solid var(--bd);cursor:pointer}
+.dd{border:2px solid var(--bd);border-radius:12px;margin-top:12px;padding:0 12px}.dd summary{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px 0;font-weight:700;cursor:pointer;list-style:none}.dd summary::-webkit-details-marker{display:none}.dd summary::after{content:'▾';color:var(--pr);font-size:20px}.dd[open] summary::after{content:'▴'}.dd summary .tag{margin-left:auto}
 table{width:100%;border-collapse:collapse;font-size:15px}th,td{padding:8px 6px;border-bottom:1px solid var(--bd);text-align:left;vertical-align:top}th{color:var(--mu);font-size:13px}.n{text-align:right!important;white-space:nowrap}.tw{overflow-x:auto}tfoot td{font-weight:700;border-top:2px solid var(--sg)}
 @media print{nav,.noprint{display:none!important}body{background:#fff;color:#000;padding:0}.card{border:0;box-shadow:none;padding:0}:root{--bg:#fff;--card:#fff;--tx:#000;--mu:#555}}
 #mod{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:14px;z-index:9;overflow:auto}
@@ -99,7 +101,16 @@ function vender(){
   <label>¿Cuánto pagó ahora? (en miles)</label><input id="vp" type="number" inputmode="decimal" placeholder="${tot}" value="${V.pago}" oninput="V.pago=this.value">
   <div class="mu">Si deja en blanco, se toma como pagado todo. Si paga menos, el resto queda como deuda.</div>
   <button class="b full" onclick="regVenta()">✅ Registrar venta</button></div>`:''}
-  <h2>Últimas ventas</h2><div class="card">${hist.length?hist.map(v=>`<div class="item"><span><b>${fmtF(v.fecha)}</b> · ${esc(cliN(v.cli))}<br><span class="mu">${v.items.map(i=>i.cant+'× '+esc(i.nombre)).join(', ')}</span>${saldo(v)>0?`<br><span class="ma">Debe ${$$(saldo(v))}</span>`:''}</span><span class="acts"><b>${$$(v.total)}</b><button class="b sm sec" onclick="delVenta('${v.id}')">Anular</button></span></div>`).join(''):'<span class="mu">Todavía no hay ventas.</span>'}</div>`;
+  <h2>👥 Varios compradores, mismo producto</h2><div class="card"><div class="mu">Tildá a quienes llevaron lo mismo y se cargan todas las ventas juntas.</div>
+  <label>Producto</label><select onchange="M.pid=this.value"><option value="">— Elegir —</option>${S.productos.map(p=>`<option value="${p.id}" ${M.pid===p.id?'selected':''}>${esc(prodN(p))} · ${$$(p.precio)} (stock ${p.stock})</option>`).join('')}</select>
+  <label>Cantidad (para cada uno)</label><input type="number" min="1" value="${M.cant}" onchange="M.cant=+this.value||1">
+  <label>Medio de pago</label>${medioSel('mm',M.medio)}
+  <label>¿Pagaron?</label><select onchange="M.pago=this.value"><option value="si" ${M.pago==='si'?'selected':''}>Sí, pagaron todo</option><option value="no" ${M.pago==='no'?'selected':''}>No, quedan debiendo</option></select>
+  <details class="dd" ${M.open?'open':''} ontoggle="M.open=this.open"><summary><span>👥 Elegir compradores</span><span id="mc" class="tag">${M.sel.length} tildados</span></summary>
+  ${S.clientes.length?S.clientes.map(c=>`<label class="ck"><input type="checkbox" ${M.sel.includes(c.id)?'checked':''} onchange="togM('${c.id}',this.checked)"> ${esc(c.nombre)}</label>`).join(''):'<div class="mu">Primero agregá compradores en Clientes.</div>'}
+  <div class="row" style="margin-bottom:12px"><button class="b sec sm" onclick="M.sel=S.clientes.map(c=>c.id);render()">Tildar todos</button><button class="b sec sm" onclick="M.sel=[];render()">Quitar tildes</button></div></details>
+  <button class="b full" onclick="regMulti()">✅ Registrar ventas</button></div>
+  <h2>Últimas ventas</h2><div class="card">${hist.length?hist.map(v=>`<div class="item"><span><b>${fmtF(v.fecha)}</b> · ${esc(cliN(v.cli))}<br><span class="mu">${v.items.map(i=>i.cant+'× '+esc(i.nombre)).join(', ')}</span>${saldo(v)>0?`<br><span class="ma">Debe ${$$(saldo(v))}</span>`:''}</span><span class="acts"><b>${$$(v.total)}</b><button class="b sm sec" onclick="editVenta('${v.id}')">Editar</button><button class="b sm sec" onclick="delVenta('${v.id}')">Anular</button></span></div>`).join(''):'<span class="mu">Todavía no hay ventas.</span>'}</div>`;
 }
 function addCart(){
   const p=S.productos.find(x=>x.id===V.pid);if(!p)return flash('Elegí un producto');
@@ -142,12 +153,13 @@ function gasto(){return gasto0()+sugerido()}
 function gasto0(){
   const L=S.gastos.slice().sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,40);
   return `<h2>Gastos</h2><button class="b full" style="margin-top:0" onclick="formGasto()">➕ Anotar gasto</button>
-  <div class="card">${L.length?L.map(g=>`<div class="item"><span><b>${esc(g.concepto)}</b><br><span class="mu">${fmtF(g.fecha)} · ${esc(g.medio)}</span></span><span class="acts"><b class="ma">${$$(g.monto)}</b><button class="b sm sec" onclick="delGasto('${g.id}')">✕</button></span></div>`).join(''):'<span class="mu">Sin gastos anotados.</span>'}</div>`;
+  <div class="card">${L.length?L.map(g=>`<div class="item"><span><b>${esc(g.concepto)}</b><br><span class="mu">${fmtF(g.fecha)} · ${esc(g.medio)}</span></span><span class="acts"><b class="ma">${$$(g.monto)}</b><button class="b sm sec" onclick="formGasto('${g.id}')">Editar</button><button class="b sm sec" onclick="delGasto('${g.id}')">✕</button></span></div>`).join(''):'<span class="mu">Sin gastos anotados.</span>'}</div>`;
 }
-function formGasto(){modal('Nuevo gasto',`<label>¿En qué se gastó?</label><input id="f1" placeholder="Ej: Tela, relleno, envío, hilo">
-  <label>Monto (en miles)</label><input id="f2" type="number" inputmode="decimal"><label>Fecha</label><input id="f3" type="date" value="${hoy()}"><label>Medio de pago</label>${medioSel('f4')}`,()=>{
+function formGasto(id){const g=S.gastos.find(x=>x.id===id)||{concepto:'',monto:'',fecha:hoy(),medio:''};modal(id?'Editar gasto':'Nuevo gasto',`<label>¿En qué se gastó?</label><input id="f1" value="${esc(g.concepto)}" placeholder="Ej: Tela, relleno, envío, hilo">
+  <label>Monto (en miles)</label><input id="f2" type="number" inputmode="decimal" value="${g.monto}"><label>Fecha</label><input id="f3" type="date" value="${g.fecha}"><label>Medio de pago</label>${medioSel('f4',g.medio)}`,()=>{
   const c=$('#f1').value.trim(),m=num('f2');if(!c||!m){flash('Completá concepto y monto');return false}
-  S.gastos.push({id:uid(),concepto:c,monto:m,fecha:$('#f3').value||hoy(),medio:$('#f4').value});save();render()})}
+  const o={concepto:c,monto:m,fecha:$('#f3').value||hoy(),medio:$('#f4').value};
+  if(id)Object.assign(g,o);else S.gastos.push({id:uid(),...o});save();render()})}
 function delGasto(id){modal('¿Borrar este gasto?','',()=>{S.gastos=S.gastos.filter(g=>g.id!==id);save();render()},'Sí, borrar')}
 /* CLIENTES */
 function cli(){
@@ -327,13 +339,50 @@ function cargarCopia(inp){const f=inp.files[0];inp.value='';if(!f)return;const r
 function resumenV(){
   const VV=S.ventas.slice().reverse().sort((a,b)=>b.fecha.localeCompare(a.fecha));
   const tV=S.ventas.reduce((a,v)=>a+v.total,0),tP=S.ventas.reduce((a,v)=>a+pagado(v),0);
-  const tab_=(h,rows,foot)=>`<div class="tw"><table><thead><tr>${h.map(x=>`<th class="${x[1]?'n':''}">${x[0]}</th>`).join('')}</tr></thead><tbody>${rows}</tbody>${foot?`<tfoot><tr>${foot}</tr></tfoot>`:''}</table></div>`;
+  const tab_=(h,rows,foot)=>`<div class="tw"><table><thead><tr>${h.map(x=>`<th class="${x[1]?'n':''} ${x[2]?'noprint':''}">${x[0]}</th>`).join('')}</tr></thead><tbody>${rows}</tbody>${foot?`<tfoot><tr>${foot}</tr></tfoot>`:''}</table></div>`;
   const cr=S.clientes.map(c=>{const vs=S.ventas.filter(v=>v.cli===c.id);return{c,t:vs.reduce((a,v)=>a+v.total,0),p:vs.reduce((a,v)=>a+pagado(v),0),n:vs.length}});
   const uT=S.productos.reduce((a,p)=>a+p.stock,0),vT=S.productos.reduce((a,p)=>a+p.stock*p.precio,0);
   return `<div class="row noprint"><button class="b sec" onclick="go('inicio')">← Volver</button><button class="b" onclick="window.print()">🖨 Imprimir</button></div>
-  <h2>Ventas realizadas</h2><div class="card">${S.ventas.length?tab_([['Fecha'],['Comprador'],['Producto'],['Total',1],['Pagó',1],['Debe',1]],VV.map(v=>`<tr><td>${fmtF(v.fecha).slice(0,5)}</td><td>${esc(cliN(v.cli))}</td><td>${v.items.map(i=>i.cant+'× '+esc(i.nombre)).join('<br>')}</td><td class="n">${$$(v.total)}</td><td class="n">${$$(pagado(v))}</td><td class="n ${saldo(v)>0?'ma':''}">${saldo(v)>0?$$(saldo(v)):'—'}</td></tr>`).join(''),`<td colspan="3">TOTAL (${S.ventas.length} ventas)</td><td class="n">${$$(tV)}</td><td class="n">${$$(tP)}</td><td class="n ma">${$$(tV-tP)}</td>`):'<span class="mu">Todavía no hay ventas.</span>'}</div>
+  <h2>Ventas realizadas</h2><div class="card">${S.ventas.length?tab_([['Fecha'],['Comprador'],['Producto'],['Total',1],['Pagó',1],['Debe',1],['✏️',0,1]],VV.map(v=>`<tr><td>${fmtF(v.fecha).slice(0,5)}</td><td>${esc(cliN(v.cli))}</td><td>${v.items.map(i=>i.cant+'× '+esc(i.nombre)).join('<br>')}</td><td class="n">${$$(v.total)}</td><td class="n">${$$(pagado(v))}</td><td class="n ${saldo(v)>0?'ma':''}">${saldo(v)>0?$$(saldo(v)):'—'}</td><td class="noprint"><button class="b sm sec" onclick="editVenta('${v.id}')">✏️</button></td></tr>`).join(''),`<td colspan="3">TOTAL (${S.ventas.length} ventas)</td><td class="n">${$$(tV)}</td><td class="n">${$$(tP)}</td><td class="n ma">${$$(tV-tP)}</td><td class="noprint"></td>`):'<span class="mu">Todavía no hay ventas.</span>'}</div>
   <h2>Compradores</h2><div class="card">${cr.length?tab_([['Nombre'],['Compras',1],['Compró',1],['Debe',1]],cr.map(r=>`<tr><td>${esc(r.c.nombre)}${r.c.tel?'<br><span class="mu">'+esc(r.c.tel)+'</span>':''}</td><td class="n">${r.n}</td><td class="n">${$$(r.t)}</td><td class="n ${r.t-r.p>0?'ma':''}">${r.t-r.p>0?$$(r.t-r.p):'—'}</td></tr>`).join('')):'<span class="mu">Sin compradores.</span>'}</div>
   <h2>Stock</h2><div class="card">${S.productos.length?tab_([['Producto'],['Stock',1],['Precio',1],['Valor',1]],S.productos.map(p=>`<tr><td>${esc(prodN(p))}</td><td class="n ${p.stock<=2?'ma':''}"><b>${p.stock}</b></td><td class="n">${$$(p.precio)}</td><td class="n">${$$(p.stock*p.precio)}</td></tr>`).join(''),`<td>TOTAL</td><td class="n">${uT}</td><td></td><td class="n">${$$(vT)}</td>`):'<span class="mu">Sin productos.</span>'}</div>`;
+}
+
+let M={pid:'',cant:1,medio:'',pago:'si',sel:[],open:false};
+function togM(id,on){M.sel=M.sel.filter(x=>x!==id);if(on)M.sel.push(id);const e=$('#mc');if(e)e.textContent=M.sel.length+' tildados'}
+function regMulti(){
+  const p=S.productos.find(x=>x.id===M.pid);if(!p)return flash('Elegí un producto');
+  const n=M.sel.length;if(!n)return flash('Tildá al menos un comprador');
+  if(p.stock<M.cant*n)return flash('No alcanza el stock: quedan '+p.stock+' y se necesitan '+(M.cant*n));
+  const tot=p.precio*M.cant,medio=$('#mm').value;
+  M.sel.forEach(cid=>S.ventas.push({id:uid(),fecha:hoy(),items:[{pid:p.id,nombre:prodN(p),cant:M.cant,precio:p.precio}],total:tot,cli:cid,pagos:M.pago==='si'?[{fecha:hoy(),monto:tot,medio}]:[]}));
+  p.stock-=M.cant*n;M.sel=[];M.pid='';M.cant=1;save();render();flash(n+' ventas registradas 🎉');
+}
+function editVenta(id){
+  const v=S.ventas.find(x=>x.id===id);if(!v)return;const N=v.items.length+1;
+  const auto=Math.abs(v.items.reduce((a,i)=>a+i.cant*i.precio,0)-v.total)<0.001;
+  let rows='';
+  for(let k=0;k<N;k++){const i=v.items[k];
+    rows+=`<div class="card" style="margin:6px 0;padding:10px"><label style="margin-top:0">Producto ${k+1}${i?'':' (opcional)'}</label><select id="ep${k}" onchange="const p=S.productos.find(x=>x.id===this.value);if(p){document.getElementById('er${k}').value=p.precio}"><option value="">— ninguno —</option>${i&&!S.productos.some(p=>p.id===i.pid)?`<option value="${esc(i.pid)}" selected>${esc(i.nombre)}</option>`:''}${S.productos.map(p=>`<option value="${p.id}" ${i&&p.id===i.pid?'selected':''}>${esc(prodN(p))}</option>`).join('')}</select>
+    <div class="grid"><div><label>Cantidad</label><input id="ec${k}" type="number" inputmode="numeric" value="${i?i.cant:''}"></div><div><label>Precio c/u (miles)</label><input id="er${k}" type="number" inputmode="decimal" value="${i?i.precio:''}"></div></div></div>`}
+  const cl=S.clientes.concat((S.borrados||[]).filter(c=>c.id===v.cli));
+  modal('Editar venta',`<label>Fecha</label><input id="ev_f" type="date" value="${v.fecha}">
+  <label>Comprador</label><select id="ev_c"><option value="">Sin nombre</option>${cl.map(c=>`<option value="${c.id}" ${c.id===v.cli?'selected':''}>${esc(c.nombre)}</option>`).join('')}</select>
+  ${rows}${auto?'':`<label>Total de la venta (en miles)</label><input id="ev_t" type="number" inputmode="decimal" value="${v.total}">`}
+  <label>Medio de pago</label>${medioSel('ev_m',v.pagos[0]&&v.pagos[0].medio)}
+  <label>Total pagado hasta ahora (en miles)</label><input id="ev_p" type="number" inputmode="decimal" value="${pagado(v)}">
+  <div class="mu">Si pagó menos que el total, el resto queda como deuda.</div>`,()=>{
+    const items=[];
+    for(let k=0;k<N;k++){const pid=$('#ep'+k).value,c=Math.round(num('ec'+k)),pr=num('er'+k);if(!pid||c<=0)continue;const p=S.productos.find(x=>x.id===pid),old=v.items.find(i=>i.pid===pid);items.push({pid,nombre:p?prodN(p):(old?old.nombre:'Producto'),cant:c,precio:pr})}
+    if(!items.length){flash('Dejá al menos un producto');return false}
+    const sum=items.reduce((a,i)=>a+i.cant*i.precio,0),total=auto?sum:(num('ev_t')||sum),pg=num('ev_p'),cli=$('#ev_c').value;
+    if(pg>total+0.001){flash('Lo pagado es mayor al total');return false}
+    if(pg<total-0.001&&!cli){flash('Para dejar deuda elegí un comprador');return false}
+    v.items.forEach(i=>{const p=S.productos.find(x=>x.id===i.pid);if(p)p.stock+=i.cant});
+    items.forEach(i=>{const p=S.productos.find(x=>x.id===i.pid);if(p)p.stock=Math.max(0,p.stock-i.cant)});
+    const medio=$('#ev_m').value,m0=v.pagos[0]&&v.pagos[0].medio;
+    if(!(Math.abs(pg-pagado(v))<0.001&&medio===m0))v.pagos=pg>0?[{fecha:(v.pagos[0]&&v.pagos[0].fecha)||v.fecha,monto:pg,medio}]:[];
+    Object.assign(v,{items,total,cli,fecha:$('#ev_f').value||v.fecha});save();render();flash('Venta corregida ✅')});
 }
 render();init();
 </script></body></html>
